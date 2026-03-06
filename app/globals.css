@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-white text-slate-900;
+}
+
+.folder-lid {
+  transform-origin: top;
+  transition: transform 0.35s ease;
+}
+
+.folder-card:hover .folder-lid {
+  transform: rotateX(40deg);
+}
