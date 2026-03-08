@@ -9,10 +9,16 @@ export default function HomePage() {
   const [salespeople, setSalespeople] = useState<Salesperson[]>([]);
 
   const loadSalespeople = async () => {
+  try {
     const res = await fetch("/api/salespeople", { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to load");
     const data = (await res.json()) as Salesperson[];
     setSalespeople(data);
-  };
+  } catch (err) {
+    console.error("Error loading salespeople:", err);
+    setSalespeople([]); // fallback
+  }
+};
 
   useEffect(() => {
     loadSalespeople();

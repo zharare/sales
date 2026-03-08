@@ -1,34 +1,37 @@
-import { NextResponse } from "next/server";
-import { createDefaultRows } from "@/lib/defaults";
-import { getReportRows, getSalespeople, setReportRows, setSalespeople } from "@/lib/kv";
-import { REPORT_COLUMNS, type ReportRow } from "@/lib/types";
+import { NextResponse } from "next/server"
+import fs from "fs"
+import path from "path"
 
-export async function GET(_: Request, { params }: { params: { salespersonId: string } }) {
-  const rows = await getReportRows(params.salespersonId);
-  const payload = rows.length ? rows : createDefaultRows();
-  return NextResponse.json(payload);
-}
+const base = path.join(process.cwd(), "data/reports")
 
-export async function POST(req: Request, { params }: { params: { salespersonId: string } }) {
-  const body = (await req.json()) as { rows: ReportRow[] };
-  if (!Array.isArray(body.rows)) {
-    return NextResponse.json({ error: "Rows must be an array" }, { status: 400 });
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const file = path.join(base, `${params.id}.json`)
+
+  if (!fs.existsSync(file)) {
+    return NextResponse.json([])
   }
 
-  const sanitized = body.rows.map((row) =>
-    REPORT_COLUMNS.reduce((acc, col) => {
-      acc[col] = `${row[col] ?? ""}`.toUpperCase();
-      return acc;
-    }, {} as ReportRow)
-  );
+  const data = JSON.parse(fs.readFileSync(file, "utf8"))
 
-  await setReportRows(params.salespersonId, sanitized);
+  return NextResponse.json(data)
+}
 
-  const salespeople = await getSalespeople();
-  const updated = salespeople.map((person) =>
-    person.id === params.salespersonId ? { ...person, rows: sanitized } : person
-  );
-  await setSalespeople(updated);
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const body = await req.json()
 
-  return NextResponse.json({ ok: true });
+  if (!fs.existsSync(base)) {
+    fs.mkdirSync(base, { recursive: true })
+  }
+
+  const file = path.join(base, `${params.id}.json`)
+
+  fs.writeFileSync(file, JSON.stringify(body.rows, null, 2))
+
+  return NextResponse.json({ ok: true })
 }
