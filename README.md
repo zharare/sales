@@ -48,3 +48,4 @@ npm run dev
 2. Importar proyecto en Vercel.
 3. Configurar variables de entorno de Vercel KV.
 4. Deploy.
+// trigger deploy
