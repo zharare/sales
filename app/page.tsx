@@ -45,9 +45,17 @@ export default function HomePage() {
   };
 
   const remove = async (id: string) => {
+
+  if (!confirm("¿Borrar este comercial?")) return;
+
+  setSalespeople((prev) => prev.filter((p) => p.id !== id));
+
+  try {
     await fetch(`/api/salespeople/${id}`, { method: "DELETE" });
+  } catch {
     await loadSalespeople();
-  };
+  }
+};
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-8">
